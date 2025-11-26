@@ -1,6 +1,6 @@
 ---
 marp: true
-theme: rose-pine
+theme: default
 paginate: true
 title: Unit I - Introduction to Data Science and Python
 description: DSC 481 - Pokhara University, Faculty of Management Studies
