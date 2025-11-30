@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
+import { put, list, del } from "@vercel/blob";
 import formidable from "formidable";
+import fs from "fs";
 
 // Disable default body parser for file uploads
 export const config = {
@@ -14,17 +14,15 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "dsc481admin";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const contentPath = path.join(process.cwd(), "content");
-
   const form = formidable({
     maxFileSize: 10 * 1024 * 1024, // 10MB limit
-    filter: ({ mimetype, originalFilename }) => {
+    filter: ({ originalFilename }) => {
       // Only allow .md and .html files
       const ext = originalFilename?.split(".").pop()?.toLowerCase();
       return ext === "md" || ext === "html";
@@ -54,35 +52,14 @@ export default async function handler(
       return res.status(400).json({ error: "Destination folder is required" });
     }
 
-    // Build destination path
-    let destFolder: string;
-    if (isUnreleased) {
-      destFolder = path.join(contentPath, "unreleased", destination);
-    } else {
-      destFolder = path.join(contentPath, destination);
-    }
-
-    // Security check
-    if (!destFolder.startsWith(contentPath)) {
-      return res.status(403).json({ error: "Access denied" });
-    }
-
-    // Create destination folder if it doesn't exist
-    if (!fs.existsSync(destFolder)) {
-      fs.mkdirSync(destFolder, { recursive: true });
-    }
-
     // Process uploaded files
     const uploadedFiles: string[] = [];
     const fileArray = files.file;
 
     if (!fileArray || fileArray.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "No valid files uploaded. Only .md and .html files are allowed.",
-        });
+      return res.status(400).json({
+        error: "No valid files uploaded. Only .md and .html files are allowed.",
+      });
     }
 
     for (const file of fileArray) {
@@ -93,28 +70,49 @@ export default async function handler(
         continue;
       }
 
-      const destPath = path.join(
-        destFolder,
-        file.originalFilename || `file.${ext}`
-      );
+      const fileName = file.originalFilename || `file.${ext}`;
 
-      // Read the temp file and write to destination
+      // Build blob path
+      let blobPath: string;
+      if (isUnreleased) {
+        blobPath = `unreleased/${destination}/${fileName}`;
+      } else {
+        blobPath = `${destination}/${fileName}`;
+      }
+
+      // Read the temp file content
       const content = fs.readFileSync(file.filepath);
-      fs.writeFileSync(destPath, content);
+
+      // Check if file already exists and delete it first (to overwrite)
+      const { blobs } = await list({ prefix: blobPath });
+      const existingBlob = blobs.find((b) => b.pathname === blobPath);
+      if (existingBlob) {
+        await del(existingBlob.url);
+      }
+
+      // Determine content type
+      const contentType =
+        ext === "html"
+          ? "text/html; charset=utf-8"
+          : "text/markdown; charset=utf-8";
+
+      // Upload to Vercel Blob
+      await put(blobPath, content, {
+        access: "public",
+        addRandomSuffix: false,
+        contentType,
+      });
 
       // Clean up temp file
       fs.unlinkSync(file.filepath);
 
-      uploadedFiles.push(file.originalFilename || `file.${ext}`);
+      uploadedFiles.push(fileName);
     }
 
     if (uploadedFiles.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "No valid files uploaded. Only .md and .html files are allowed.",
-        });
+      return res.status(400).json({
+        error: "No valid files uploaded. Only .md and .html files are allowed.",
+      });
     }
 
     return res.status(200).json({

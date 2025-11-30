@@ -1,15 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Marp } from "@marp-team/marp-core";
-import { marpCli } from "@marp-team/marp-cli";
-import fs from "fs";
-import path from "path";
-import os from "os";
+import { put, list, del } from "@vercel/blob";
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "dsc481admin";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -42,68 +39,81 @@ export default async function handler(
     }
 
     if (action === "export") {
-      // Export to standalone HTML using Marp CLI (same as VS Code extension)
-      const tempDir = os.tmpdir();
-      const tempMdFile = path.join(tempDir, `marp-temp-${Date.now()}.md`);
-      const tempHtmlFile = path.join(tempDir, `marp-temp-${Date.now()}.html`);
+      // Export to standalone HTML using Marp Core (serverless-compatible)
+      const marp = new Marp({
+        html: true,
+        math: true,
+      });
+      const { html, css } = marp.render(markdown || "");
 
-      try {
-        // Write markdown to temp file
-        fs.writeFileSync(tempMdFile, markdown || "", "utf-8");
+      // Create a standalone HTML document similar to Marp CLI output
+      const generatedHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marp Presentation</title>
+  <style>
+    ${css}
+    /* Additional styles for presentation */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    .marpit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    section {
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  ${html}
+</body>
+</html>`;
 
-        // Use Marp CLI to convert (this gives the same output as VS Code)
-        await marpCli([tempMdFile, "-o", tempHtmlFile, "--html"]);
-
-        // Read the generated HTML
-        const generatedHtml = fs.readFileSync(tempHtmlFile, "utf-8");
-
-        // Clean up temp files
-        fs.unlinkSync(tempMdFile);
-        fs.unlinkSync(tempHtmlFile);
-
-        return res.status(200).json({ html: generatedHtml });
-      } catch (err) {
-        // Clean up temp files on error
-        if (fs.existsSync(tempMdFile)) fs.unlinkSync(tempMdFile);
-        if (fs.existsSync(tempHtmlFile)) fs.unlinkSync(tempHtmlFile);
-        throw err;
-      }
+      return res.status(200).json({ html: generatedHtml });
     }
 
     if (action === "save") {
-      // Save markdown file
+      // Save markdown file to Vercel Blob
       if (!fileName || !folder) {
         return res
           .status(400)
           .json({ error: "fileName and folder are required" });
       }
 
-      const contentPath = path.join(process.cwd(), "content");
-      let destFolder: string;
-
-      if (isUnreleased) {
-        destFolder = path.join(contentPath, "unreleased", folder);
-      } else {
-        destFolder = path.join(contentPath, folder);
-      }
-
-      // Security check
-      if (!destFolder.startsWith(contentPath)) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      // Create folder if it doesn't exist
-      if (!fs.existsSync(destFolder)) {
-        fs.mkdirSync(destFolder, { recursive: true });
-      }
-
       // Ensure .md extension
       const finalFileName = fileName.endsWith(".md")
         ? fileName
         : `${fileName}.md`;
-      const filePath = path.join(destFolder, finalFileName);
 
-      fs.writeFileSync(filePath, markdown, "utf-8");
+      // Build blob path
+      let blobPath: string;
+      if (isUnreleased) {
+        blobPath = `unreleased/${folder}/${finalFileName}`;
+      } else {
+        blobPath = `${folder}/${finalFileName}`;
+      }
+
+      // Check if file already exists and delete it first (to overwrite)
+      const { blobs } = await list({ prefix: blobPath });
+      const existingBlob = blobs.find((b) => b.pathname === blobPath);
+      if (existingBlob) {
+        await del(existingBlob.url);
+      }
+
+      // Upload to Vercel Blob
+      await put(blobPath, markdown || "", {
+        access: "public",
+        addRandomSuffix: false,
+      });
 
       return res.status(200).json({
         success: true,
@@ -114,7 +124,7 @@ export default async function handler(
     }
 
     if (action === "save-html") {
-      // Save exported HTML file using Marp CLI (same as VS Code extension)
+      // Save exported HTML file to Vercel Blob
       if (!fileName) {
         return res.status(400).json({ error: "fileName is required" });
       }
@@ -122,64 +132,86 @@ export default async function handler(
       // folder can be empty string for root-level files
       const folderPath = folder || "";
 
-      const contentPath = path.join(process.cwd(), "content");
-      let destFolder: string;
-
-      if (isUnreleased) {
-        destFolder = folderPath
-          ? path.join(contentPath, "unreleased", folderPath)
-          : path.join(contentPath, "unreleased");
-      } else {
-        destFolder = folderPath
-          ? path.join(contentPath, folderPath)
-          : contentPath;
-      }
-
-      // Security check
-      if (!destFolder.startsWith(contentPath)) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      // Create folder if it doesn't exist
-      if (!fs.existsSync(destFolder)) {
-        fs.mkdirSync(destFolder, { recursive: true });
-      }
-
       // Ensure .html extension
       const finalFileName = fileName.endsWith(".html")
         ? fileName
         : `${fileName}.html`;
-      const outputPath = path.join(destFolder, finalFileName);
 
-      // Use temp file for markdown and convert with Marp CLI
-      const tempDir = os.tmpdir();
-      const tempMdFile = path.join(tempDir, `marp-save-${Date.now()}.md`);
-
-      try {
-        // Write markdown to temp file
-        fs.writeFileSync(tempMdFile, markdown || "", "utf-8");
-
-        // Use Marp CLI to convert (this gives the same output as VS Code)
-        await marpCli([tempMdFile, "-o", outputPath, "--html"]);
-
-        // Clean up temp file
-        fs.unlinkSync(tempMdFile);
-
-        return res.status(200).json({
-          success: true,
-          message: `Exported ${finalFileName} to ${
-            isUnreleased ? "unreleased/" : ""
-          }${folderPath || "(root)"}`,
-        });
-      } catch (err) {
-        // Clean up temp file on error
-        if (fs.existsSync(tempMdFile)) fs.unlinkSync(tempMdFile);
-        throw err;
+      // Build blob path
+      let blobPath: string;
+      if (isUnreleased) {
+        blobPath = folderPath
+          ? `unreleased/${folderPath}/${finalFileName}`
+          : `unreleased/${finalFileName}`;
+      } else {
+        blobPath = folderPath
+          ? `${folderPath}/${finalFileName}`
+          : finalFileName;
       }
+
+      // Generate HTML using Marp Core
+      const marp = new Marp({
+        html: true,
+        math: true,
+      });
+      const { html, css } = marp.render(markdown || "");
+
+      // Create a standalone HTML document
+      const generatedHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marp Presentation</title>
+  <style>
+    ${css}
+    /* Additional styles for presentation */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    .marpit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    section {
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  ${html}
+</body>
+</html>`;
+
+      // Check if file already exists and delete it first (to overwrite)
+      const { blobs } = await list({ prefix: blobPath });
+      const existingBlob = blobs.find((b) => b.pathname === blobPath);
+      if (existingBlob) {
+        await del(existingBlob.url);
+      }
+
+      // Upload to Vercel Blob
+      await put(blobPath, generatedHtml, {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: "text/html; charset=utf-8",
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: `Exported ${finalFileName} to ${
+          isUnreleased ? "unreleased/" : ""
+        }${folderPath || "(root)"}`,
+      });
     }
 
     if (action === "update") {
-      // Update existing file
+      // Update existing file in Vercel Blob
       const { filePath: reqFilePath, source } = req.body;
 
       if (!reqFilePath || !source) {
@@ -188,29 +220,43 @@ export default async function handler(
           .json({ error: "filePath and source are required" });
       }
 
-      const contentPath = path.join(process.cwd(), "content");
-      let fullPath: string;
-
+      // Build blob path - reqFilePath already contains the relative path
+      let blobPath: string;
       if (source === "unreleased") {
-        fullPath = path.join(contentPath, "unreleased", reqFilePath);
+        // Check if reqFilePath already starts with unreleased/
+        blobPath = reqFilePath.startsWith("unreleased/")
+          ? reqFilePath
+          : `unreleased/${reqFilePath}`;
       } else {
-        fullPath = path.join(contentPath, reqFilePath);
+        blobPath = reqFilePath;
       }
 
-      // Security check
-      if (!fullPath.startsWith(contentPath)) {
-        return res.status(403).json({ error: "Access denied" });
-      }
+      // Check if file exists
+      const { blobs } = await list({ prefix: blobPath });
+      const existingBlob = blobs.find((b) => b.pathname === blobPath);
 
-      if (!fs.existsSync(fullPath)) {
+      if (!existingBlob) {
         return res.status(404).json({ error: "File not found" });
       }
 
-      fs.writeFileSync(fullPath, markdown, "utf-8");
+      // Delete old blob and upload new content
+      await del(existingBlob.url);
 
+      // Determine content type based on extension
+      const isHtml = blobPath.endsWith(".html");
+
+      await put(blobPath, markdown || "", {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: isHtml
+          ? "text/html; charset=utf-8"
+          : "text/markdown; charset=utf-8",
+      });
+
+      const baseName = blobPath.split("/").pop() || blobPath;
       return res.status(200).json({
         success: true,
-        message: `Updated ${path.basename(reqFilePath)}`,
+        message: `Updated ${baseName}`,
       });
     }
 
