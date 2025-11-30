@@ -73,9 +73,8 @@ const UnitPage = ({ unit, files }: { unit: string; files: FileInfo[] }) => (
       {files.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {files.map((file) => {
-            const isHtml = file.name.endsWith(".html");
-            // For HTML files, link directly to blob URL; for others, use internal route
-            const href = isHtml ? file.url : `/${unit}/${file.name}`;
+            // Use internal route for all files - serve API handles HTML with proper headers
+            const href = `/${unit}/${file.name}`;
             return (
               <GridItem
                 key={file.name}

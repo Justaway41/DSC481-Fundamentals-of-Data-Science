@@ -15,7 +15,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
       // Exclude unreleased folder and .gitkeep files
       if (blob.pathname.startsWith("unreleased/")) return false;
       if (blob.pathname.endsWith(".gitkeep")) return false;
-      if (blob.pathname.endsWith(".html")) return false; // HTML files are served directly
       const parts = blob.pathname.split("/");
       return parts.length === 2; // Only files directly in unit folders
     })
@@ -50,6 +49,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     const response = await fetch(blob.url);
     const fileContent = await response.text();
     const isMarkdown = file.endsWith(".md");
+    const isHtml = file.endsWith(".html");
 
     return {
       props: {
@@ -57,6 +57,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
         fileName: file,
         content: fileContent,
         isMarkdown,
+        isHtml,
       },
       revalidate: 60, // ISR - revalidate every 60 seconds
     };
@@ -85,17 +86,40 @@ const FileViewer = ({
   fileName,
   content,
   isMarkdown,
+  isHtml,
 }: {
   unit: string;
   fileName: string;
   content: string;
   isMarkdown: boolean;
+  isHtml: boolean;
 }) => {
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const cleanedMarkdown = isMarkdown ? cleanMarpMarkdown(content) : "";
   const isSlides = fileName.toLowerCase().includes("slide");
 
-  // Presentation mode - fullscreen slide viewer
+  // HTML files - render in full-page iframe using our serve API (avoids download headers)
+  if (isHtml) {
+    return (
+      <iframe
+        src={`/api/serve/${unit}/${fileName}`}
+        allow="fullscreen"
+        allowFullScreen
+        style={{
+          width: "100vw",
+          height: "100vh",
+          border: "none",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 9999,
+        }}
+        title={fileName}
+      />
+    );
+  }
+
+  // Presentation mode - fullscreen slide viewer for markdown
   if (isPresentationMode && isMarkdown) {
     return (
       <SlideViewer

@@ -145,6 +145,29 @@ export default async function handler(
       return res.status(200).json({ content, fileName });
     }
 
+    // Preview HTML file (serve with proper content-type for rendering)
+    if (action === "preview-html" && reqFilePath) {
+      const fullPath = reqFilePath as string;
+
+      // Find the blob
+      const { blobs } = await list({ prefix: fullPath });
+      const blob = blobs.find((b) => b.pathname === fullPath);
+
+      if (!blob) {
+        return res.status(404).send("File not found");
+      }
+
+      const response = await fetch(blob.url);
+      const content = await response.text();
+
+      // Set headers for inline HTML display with scripts enabled
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Content-Disposition", "inline");
+      res.setHeader("Cache-Control", "no-cache");
+
+      return res.status(200).send(content);
+    }
+
     // Move file from unreleased to published
     if (action === "publish" && reqFilePath && destination) {
       // filePath already contains the full path (e.g., "unreleased/Unit-2/Slides.html")

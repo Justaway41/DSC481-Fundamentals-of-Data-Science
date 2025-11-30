@@ -2210,27 +2210,53 @@ export default function AdminPage() {
               </div>
               <div className="p-6 overflow-auto max-h-[85vh]">
                 {selectedFile.fileName.endsWith(".html") ? (
-                  /* HTML Preview - sandboxed iframe for security */
+                  /* HTML Preview - with option to open with full functionality */
                   <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-100">
-                    <div className="bg-gray-200 px-3 py-2 text-xs text-gray-600 flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="bg-gray-200 px-3 py-2 text-xs text-gray-600 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                        HTML Preview
+                      </div>
+                      <button
+                        onClick={() => {
+                          const pwd = getStoredPassword();
+                          window.open(
+                            `/api/admin?password=${pwd}&action=preview-html&filePath=${encodeURIComponent(selectedFile.path)}`,
+                            "_blank",
+                          );
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                        />
-                      </svg>
-                      Sandboxed HTML Preview (scripts disabled for security)
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                        Open Full Preview
+                      </button>
                     </div>
                     <iframe
-                      srcDoc={selectedFile.content}
-                      sandbox="allow-same-origin"
+                      src={`/api/admin?password=${getStoredPassword()}&action=preview-html&filePath=${encodeURIComponent(selectedFile.path)}`}
                       className="w-full h-[80vh] bg-white"
                       title="HTML Preview"
                     />
