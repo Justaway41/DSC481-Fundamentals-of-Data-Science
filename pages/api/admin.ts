@@ -127,11 +127,8 @@ export default async function handler(
 
     // Read a file
     if (action === "read" && reqFilePath) {
-      const source = req.query.source as string;
-      const fullPath =
-        source === "published"
-          ? (reqFilePath as string)
-          : `unreleased/${reqFilePath}`;
+      // filePath already contains the full path (e.g., "unreleased/Unit-2/Slides.html" or "Unit-1/Slides.md")
+      const fullPath = reqFilePath as string;
 
       // Find the blob
       const { blobs } = await list({ prefix: fullPath });
@@ -150,8 +147,9 @@ export default async function handler(
 
     // Move file from unreleased to published
     if (action === "publish" && reqFilePath && destination) {
-      const sourcePath = `unreleased/${reqFilePath}`;
-      const fileName = (reqFilePath as string).split("/").pop() || "";
+      // filePath already contains the full path (e.g., "unreleased/Unit-2/Slides.html")
+      const sourcePath = reqFilePath as string;
+      const fileName = sourcePath.split("/").pop() || "";
       const destPath = `${destination}/${fileName}`;
 
       // Find source blob
@@ -312,8 +310,8 @@ export default async function handler(
         return res.status(400).json({ error: "Folder already exists" });
       }
 
-      // Create placeholder file
-      await put(folderPath, "", { access: "public" });
+      // Create placeholder file (use space instead of empty string to avoid Vercel Blob error)
+      await put(folderPath, " ", { access: "public", addRandomSuffix: false });
 
       return res.status(200).json({
         success: true,
@@ -345,10 +343,8 @@ export default async function handler(
           .json({ error: "File must have .md or .html extension" });
       }
 
-      const oldPath =
-        source === "unreleased"
-          ? `unreleased/${reqFilePath}`
-          : (reqFilePath as string);
+      // filePath already contains the full path (e.g., "unreleased/Unit-2/Slides.md" or "Unit-1/Slides.md")
+      const oldPath = reqFilePath as string;
 
       // Find the old blob
       const { blobs } = await list({ prefix: oldPath });
@@ -382,12 +378,8 @@ export default async function handler(
 
     // Delete file
     if (action === "delete" && reqFilePath) {
-      const source = req.query.source as string;
-
-      const filePath =
-        source === "unreleased"
-          ? `unreleased/${reqFilePath}`
-          : (reqFilePath as string);
+      // filePath already contains the full path (e.g., "unreleased/Unit-2/Slides.md" or "Unit-1/Slides.md")
+      const filePath = reqFilePath as string;
 
       // Find the blob
       const { blobs } = await list({ prefix: filePath });

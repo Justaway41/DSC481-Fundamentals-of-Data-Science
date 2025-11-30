@@ -14,7 +14,7 @@
  *   --force      Overwrite existing blobs (by default, existing files are skipped)
  */
 
-import { put, list } from "@vercel/blob";
+import { put, list, del } from "@vercel/blob";
 import * as fs from "fs";
 import * as path from "path";
 import { config } from "dotenv";
@@ -23,7 +23,6 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
-const BLOB_PREFIX = "content/";
 
 interface FileToUpload {
   localPath: string;
@@ -35,6 +34,7 @@ interface FileToUpload {
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
 const FORCE = args.includes("--force");
+const CLEAN = args.includes("--clean");
 
 /**
  * Recursively get all files in a directory
@@ -80,15 +80,15 @@ function getContentType(filePath: string): string {
 /**
  * List existing blobs in the store
  */
-async function getExistingBlobs(): Promise<Set<string>> {
-  const existingPaths = new Set<string>();
+async function getExistingBlobs(): Promise<Map<string, string>> {
+  const existingBlobs = new Map<string, string>();
 
   try {
     let cursor: string | undefined;
     do {
-      const result = await list({ prefix: BLOB_PREFIX, cursor, limit: 1000 });
+      const result = await list({ cursor, limit: 1000 });
       for (const blob of result.blobs) {
-        existingPaths.add(blob.pathname);
+        existingBlobs.set(blob.pathname, blob.url);
       }
       cursor = result.cursor;
     } while (cursor);
@@ -96,7 +96,38 @@ async function getExistingBlobs(): Promise<Set<string>> {
     console.warn("Warning: Could not list existing blobs:", error);
   }
 
-  return existingPaths;
+  return existingBlobs;
+}
+
+/**
+ * Delete all existing blobs
+ */
+async function cleanAllBlobs() {
+  console.log("🧹 Cleaning all existing blobs...\n");
+
+  const existingBlobs = await getExistingBlobs();
+
+  if (existingBlobs.size === 0) {
+    console.log("No blobs to delete.\n");
+    return;
+  }
+
+  let deleted = 0;
+  for (const [pathname, url] of existingBlobs) {
+    if (DRY_RUN) {
+      console.log(`🗑️  Would delete: ${pathname}`);
+    } else {
+      try {
+        await del(url);
+        console.log(`🗑️  Deleted: ${pathname}`);
+        deleted++;
+      } catch (error) {
+        console.error(`❌ Error deleting ${pathname}:`, error);
+      }
+    }
+  }
+
+  console.log(`\n✅ Deleted ${deleted} blobs.\n`);
 }
 
 /**
@@ -121,6 +152,11 @@ async function migrate() {
     process.exit(1);
   }
 
+  // Clean existing blobs if requested
+  if (CLEAN) {
+    await cleanAllBlobs();
+  }
+
   // Check if content directory exists
   if (!fs.existsSync(CONTENT_DIR)) {
     console.error(`❌ Error: Content directory not found at ${CONTENT_DIR}`);
@@ -132,7 +168,8 @@ async function migrate() {
   const filesToUpload: FileToUpload[] = allFiles.map((localPath) => {
     const relativePath = path.relative(CONTENT_DIR, localPath);
     // Use forward slashes for blob paths (even on Windows)
-    const blobPath = BLOB_PREFIX + relativePath.split(path.sep).join("/");
+    // NO prefix - upload directly as Unit-1/file.md, not content/Unit-1/file.md
+    const blobPath = relativePath.split(path.sep).join("/");
     const stats = fs.statSync(localPath);
     return {
       localPath,
@@ -171,7 +208,7 @@ async function migrate() {
 
     if (DRY_RUN) {
       console.log(
-        `📄 Would upload: ${file.blobPath} (${formatBytes(file.size)})`
+        `📄 Would upload: ${file.blobPath} (${formatBytes(file.size)})`,
       );
       uploaded++;
       continue;
@@ -187,9 +224,7 @@ async function migrate() {
         addRandomSuffix: false,
       });
 
-      console.log(
-        `✅ ${action}: ${file.blobPath} (${formatBytes(file.size)})`
-      );
+      console.log(`✅ ${action}: ${file.blobPath} (${formatBytes(file.size)})`);
       uploaded++;
     } catch (error) {
       console.error(`❌ Error uploading ${file.blobPath}:`, error);

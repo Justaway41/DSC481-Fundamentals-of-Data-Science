@@ -62,7 +62,7 @@ export default function AdminPage() {
   // Upload state
   const [uploadModal, setUploadModal] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<"unreleased" | "published">(
-    "unreleased"
+    "unreleased",
   );
   const [uploadFolder, setUploadFolder] = useState("");
   const [uploadNewFolder, setUploadNewFolder] = useState("");
@@ -102,7 +102,7 @@ export default function AdminPage() {
   const [editorFolder, setEditorFolder] = useState("");
   const [editorNewFolder, setEditorNewFolder] = useState("");
   const [editorTarget, setEditorTarget] = useState<"unreleased" | "published">(
-    "unreleased"
+    "unreleased",
   );
   const [editorPreview, setEditorPreview] = useState("");
   const [editorFolders, setEditorFolders] = useState<string[]>([]);
@@ -146,7 +146,7 @@ export default function AdminPage() {
 
     try {
       const res = await fetch(
-        `/api/admin?password=${password}&action=list-unreleased`
+        `/api/admin?password=${password}&action=list-unreleased`,
       );
       if (res.ok) {
         sessionStorage.setItem("adminPassword", password);
@@ -164,7 +164,7 @@ export default function AdminPage() {
 
   const loadFile = async (
     filePath: string,
-    source: "unreleased" | "published"
+    source: "unreleased" | "published",
   ) => {
     setLoading(true);
     const pwd = getStoredPassword();
@@ -172,8 +172,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=read&filePath=${encodeURIComponent(
-          filePath
-        )}&source=${source}`
+          filePath,
+        )}&source=${source}`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -190,12 +190,12 @@ export default function AdminPage() {
 
   const openMoveModal = async (
     file: FileItem,
-    source: "unreleased" | "published"
+    source: "unreleased" | "published",
   ) => {
     const pwd = getStoredPassword();
     try {
       const res = await fetch(
-        `/api/admin?password=${pwd}&action=list-folders&source=${source}`
+        `/api/admin?password=${pwd}&action=list-folders&source=${source}`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -218,15 +218,15 @@ export default function AdminPage() {
     try {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=${action}&filePath=${encodeURIComponent(
-          moveModal.file.path
-        )}&destination=${encodeURIComponent(destinationFolder)}`
+          moveModal.file.path,
+        )}&destination=${encodeURIComponent(destinationFolder)}`,
       );
 
       if (res.ok) {
         setSuccessMessage(
           moveModal.source === "unreleased"
             ? `Published "${moveModal.file.name}" to ${destinationFolder}`
-            : `Moved "${moveModal.file.name}" to unreleased/${destinationFolder}`
+            : `Moved "${moveModal.file.name}" to unreleased/${destinationFolder}`,
         );
         setMoveModal(null);
         setSelectedFile(null);
@@ -255,7 +255,7 @@ export default function AdminPage() {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=list-folders&source=${
           target === "unreleased" ? "published" : "unreleased"
-        }`
+        }`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -377,8 +377,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=${action}&filePath=${encodeURIComponent(
-          folderMoveModal.folder.name
-        )}`
+          folderMoveModal.folder.name,
+        )}`,
       );
 
       if (res.ok) {
@@ -411,8 +411,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=create-folder&filePath=${encodeURIComponent(
-          newFolderInput.trim()
-        )}&target=${createFolderModal.target}`
+          newFolderInput.trim(),
+        )}&target=${createFolderModal.target}`,
       );
 
       if (res.ok) {
@@ -446,10 +446,10 @@ export default function AdminPage() {
     try {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=rename&filePath=${encodeURIComponent(
-          renameModal.file.path
+          renameModal.file.path,
         )}&newName=${encodeURIComponent(renameInput.trim())}&source=${
           renameModal.source
-        }`
+        }`,
       );
 
       if (res.ok) {
@@ -474,7 +474,7 @@ export default function AdminPage() {
   // Open rename modal
   const openRenameModal = (
     file: FileItem,
-    source: "unreleased" | "published"
+    source: "unreleased" | "published",
   ) => {
     setRenameModal({ file, source });
     setRenameInput(file.name);
@@ -492,9 +492,9 @@ export default function AdminPage() {
     try {
       const res = await fetch(
         `/api/admin?password=${pwd}&action=delete&filePath=${encodeURIComponent(
-          deleteModal.file.path
+          deleteModal.file.path,
         )}&source=${deleteModal.source}`,
-        { method: "POST" }
+        { method: "POST" },
       );
 
       if (res.ok) {
@@ -774,7 +774,7 @@ export default function AdminPage() {
       if (htmlRes.ok) {
         const data = await htmlRes.json();
         setSuccessMessage(
-          `Saved ${editingFile.path} and exported ${fileName}.html`
+          `Saved ${editingFile.path} and exported ${fileName}.html`,
         );
         setEditorOpen(false);
         setEditingFile(null);
@@ -887,7 +887,7 @@ export default function AdminPage() {
   const renderFileTree = (
     items: FileItem[],
     source: "unreleased" | "published",
-    depth = 0
+    depth = 0,
   ) => {
     return (
       <ul className={`${depth > 0 ? "ml-4" : ""} space-y-1`}>
@@ -1102,8 +1102,8 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-96 max-w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">
-              {moveModal.source === "unreleased" ? "Publish" : "Unpublish"} "
-              {moveModal.file.name}"
+              {moveModal.source === "unreleased" ? "Publish" : "Unpublish"}{" "}
+              &quot;{moveModal.file.name}&quot;
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               {moveModal.source === "unreleased"
@@ -1240,8 +1240,8 @@ export default function AdminPage() {
                 {loading
                   ? "Moving..."
                   : folderMoveModal.source === "unreleased"
-                  ? "Publish Folder"
-                  : "Unpublish Folder"}
+                    ? "Publish Folder"
+                    : "Unpublish Folder"}
               </button>
             </div>
           </div>
@@ -1634,8 +1634,8 @@ export default function AdminPage() {
                     {editingFile
                       ? editingFile.fileName
                       : editorTarget === "unreleased"
-                      ? "Draft"
-                      : "Published"}
+                        ? "Draft"
+                        : "Published"}
                   </span>
                 </h3>
               </div>
@@ -1776,7 +1776,7 @@ export default function AdminPage() {
                       <span>Preview:</span>
                       {/* Only show toggle if content has marp: true */}
                       {/^---[\s\S]*?marp:\s*true[\s\S]*?---/m.test(
-                        editorContent
+                        editorContent,
                       ) ? (
                         <div className="flex bg-gray-300 rounded overflow-hidden">
                           <button
@@ -1807,7 +1807,7 @@ export default function AdminPage() {
                     {previewLoading &&
                       previewMode === "marp" &&
                       /^---[\s\S]*?marp:\s*true[\s\S]*?---/m.test(
-                        editorContent
+                        editorContent,
                       ) && (
                         <span className="text-xs text-gray-500">
                           Updating...
@@ -1817,7 +1817,7 @@ export default function AdminPage() {
                   <div className="flex-1 overflow-auto p-4">
                     {previewMode === "marp" &&
                     /^---[\s\S]*?marp:\s*true[\s\S]*?---/m.test(
-                      editorContent
+                      editorContent,
                     ) ? (
                       editorPreview ? (
                         <div
@@ -1937,7 +1937,7 @@ export default function AdminPage() {
                 {/* Save & Export HTML button - only when editing existing files with Marp content */}
                 {editingFile &&
                   /^---[\s\S]*?marp:\s*true[\s\S]*?---/m.test(
-                    editorContent
+                    editorContent,
                   ) && (
                     <button
                       onClick={saveMarkdownAndHtml}
@@ -1978,7 +1978,10 @@ export default function AdminPage() {
               </h2>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setCreateFolderModal({ target: "unreleased" })}
+                  onClick={() => {
+                    setError("");
+                    setCreateFolderModal({ target: "unreleased" });
+                  }}
                   className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
                   title="Create new folder"
                 >
@@ -2095,7 +2098,7 @@ export default function AdminPage() {
                           type: "file",
                           path: selectedFile.path,
                         },
-                        selectedFile.source
+                        selectedFile.source,
                       )
                     }
                     className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white"
@@ -2152,7 +2155,7 @@ export default function AdminPage() {
                           type: "file",
                           path: selectedFile.path,
                         },
-                        selectedFile.source
+                        selectedFile.source,
                       )
                     }
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -2278,7 +2281,10 @@ export default function AdminPage() {
               </h2>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setCreateFolderModal({ target: "published" })}
+                  onClick={() => {
+                    setError("");
+                    setCreateFolderModal({ target: "published" });
+                  }}
                   className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                   title="Create new folder"
                 >
