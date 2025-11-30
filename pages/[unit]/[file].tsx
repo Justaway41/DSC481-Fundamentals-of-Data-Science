@@ -1,6 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from "next";
-import fs from "fs";
-import path from "path";
+import { list } from "@vercel/blob";
 import Link from "next/link";
 import Layout from "../../components/Layout";
 import React, { useState } from "react";
@@ -9,31 +8,47 @@ import remarkGfm from "remark-gfm";
 import SlideViewer from "../../components/SlideViewer";
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const contentPath = path.join(process.cwd(), "content");
-  const units = fs.readdirSync(contentPath);
+  const { blobs } = await list();
 
-  const paths = units.flatMap((unit) => {
-    // Exclude unreleased folder from public view
-    if (unit === "unreleased") return [];
-    const unitPath = path.join(contentPath, unit);
-    if (!fs.statSync(unitPath).isDirectory()) return [];
-    const files = fs
-      .readdirSync(unitPath)
-      .filter((f) => !f.startsWith(".") && !f.endsWith(".html"));
-    return files.map((file) => ({
-      params: { unit, file },
-    }));
-  });
+  const paths = blobs
+    .filter((blob) => {
+      // Exclude unreleased folder and .gitkeep files
+      if (blob.pathname.startsWith("unreleased/")) return false;
+      if (blob.pathname.endsWith(".gitkeep")) return false;
+      if (blob.pathname.endsWith(".html")) return false; // HTML files are served directly
+      const parts = blob.pathname.split("/");
+      return parts.length === 2; // Only files directly in unit folders
+    })
+    .map((blob) => {
+      const [unit, file] = blob.pathname.split("/");
+      return { params: { unit, file } };
+    });
 
   return { paths, fallback: "blocking" };
 };
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const { unit, file } = context.params as { unit: string; file: string };
-  const filePath = path.join(process.cwd(), "content", unit, file);
+
+  // Don't allow access to unreleased folder
+  if (unit === "unreleased") {
+    return { notFound: true };
+  }
+
+  const filePath = `${unit}/${file}`;
 
   try {
-    const fileContent = fs.readFileSync(filePath, "utf-8");
+    // Find the blob
+    const { blobs } = await list({ prefix: filePath });
+    const blob = blobs.find((b) => b.pathname === filePath);
+
+    if (!blob) {
+      return { notFound: true };
+    }
+
+    // Fetch the content
+    const response = await fetch(blob.url);
+    const fileContent = await response.text();
     const isMarkdown = file.endsWith(".md");
 
     return {
@@ -43,8 +58,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
         content: fileContent,
         isMarkdown,
       },
+      revalidate: 60, // ISR - revalidate every 60 seconds
     };
   } catch (error) {
+    console.error("Error fetching file:", error);
     return { notFound: true };
   }
 };
