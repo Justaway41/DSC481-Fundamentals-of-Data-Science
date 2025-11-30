@@ -9,12 +9,23 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).send("Invalid path");
   }
 
+  // Block access to unreleased content (admin-only)
+  if (pathSegments[0] === "unreleased") {
+    return res.status(404).send("Not found");
+  }
+
   const filePath = path.join(process.cwd(), "content", ...pathSegments);
 
   // Security: ensure the path is within content directory
   const contentDir = path.join(process.cwd(), "content");
   if (!filePath.startsWith(contentDir)) {
     return res.status(403).send("Forbidden");
+  }
+
+  // Double-check: block any path that resolves to unreleased folder
+  const unreleasedDir = path.join(contentDir, "unreleased");
+  if (filePath.startsWith(unreleasedDir)) {
+    return res.status(404).send("Not found");
   }
 
   try {

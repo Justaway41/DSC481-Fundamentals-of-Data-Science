@@ -5,16 +5,26 @@ import GridItem from "../../components/GridItem";
 
 export async function getStaticPaths() {
   const contentPath = path.join(process.cwd(), "content");
-  const units = fs
-    .readdirSync(contentPath)
-    .filter((f) => fs.statSync(path.join(contentPath, f)).isDirectory());
+  const units = fs.readdirSync(contentPath).filter(
+    (f) =>
+      fs.statSync(path.join(contentPath, f)).isDirectory() && f !== "unreleased" // Exclude unreleased folder from public view
+  );
   const paths = units.map((unit) => ({ params: { unit } }));
-  return { paths, fallback: false };
+  return { paths, fallback: "blocking" };
 }
 
 export async function getStaticProps({ params }: { params: { unit: string } }) {
   const contentPath = path.join(process.cwd(), "content");
   const unitPath = path.join(contentPath, params.unit);
+
+  // Check if unit exists and is not the unreleased folder
+  if (
+    !fs.existsSync(unitPath) ||
+    !fs.statSync(unitPath).isDirectory() ||
+    params.unit === "unreleased"
+  ) {
+    return { notFound: true };
+  }
 
   // Get all files in the unit directory
   const files = fs.readdirSync(unitPath).filter((f) => !f.startsWith("."));

@@ -5,9 +5,10 @@ import GridItem from "../components/GridItem";
 
 export async function getStaticProps() {
   const contentPath = path.join(process.cwd(), "content");
-  const units = fs
-    .readdirSync(contentPath)
-    .filter((f) => fs.statSync(path.join(contentPath, f)).isDirectory());
+  const units = fs.readdirSync(contentPath).filter(
+    (f) =>
+      fs.statSync(path.join(contentPath, f)).isDirectory() && f !== "unreleased" // Exclude unreleased folder from public view
+  );
   return { props: { units } };
 }
 
