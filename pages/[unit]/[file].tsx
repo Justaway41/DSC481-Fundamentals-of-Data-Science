@@ -139,7 +139,7 @@ const FileViewer = ({
           ← Back to {unit.replace(/-/g, " ")}
         </Link>
 
-        {isMarkdown && isSlides && (
+        {/* {isMarkdown && isSlides && (
           <button
             onClick={() => setIsPresentationMode(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -165,7 +165,7 @@ const FileViewer = ({
             </svg>
             Present Slides
           </button>
-        )}
+        )} */}
       </div>
 
       {isMarkdown ? (
