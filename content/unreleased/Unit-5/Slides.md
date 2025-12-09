@@ -91,7 +91,7 @@ Speaker Notes (≈1 min)
 <!-- Scoped style -->
 <style scoped>
 section{
-  font-size: 1.6em;
+  font-size: 1.58em;
 }
 </style>
 
@@ -129,6 +129,9 @@ def f(x, lst=None):
 <!--
 Speaker Notes (≈45s)
 - Show the mutable default bug with two quick calls to f() to illustrate shared state.
+- The default list is reused, causing unexpected results.
+- This happens because default arguments in Python are evaluated only once when the function is defined, not each time the function is called.
+So, if you use a mutable object like a list as a default value, that same list is shared across all calls to the function that don’t provide their own list.
 - Explain shallow copy vs deep copy when copying lists containing nested mutable elements (list.copy(), copy.deepcopy()).
 -->
 
