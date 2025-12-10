@@ -1,3 +1,4 @@
+# Question: Use a dictionary comprehension to invert a dictionary (swap keys and values).
 d = {"a": 1, "b": 2, "c": 3}
 inverted = {v: k for k, v in d.items()}
 print(inverted)

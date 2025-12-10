@@ -1,3 +1,4 @@
+# Question: Given a list with duplicates, return a list with unique elements, preserving order.
 def dedupe(seq):
     seen = set()
     out = []

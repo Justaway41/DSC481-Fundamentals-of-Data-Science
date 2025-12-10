@@ -1,3 +1,4 @@
+# Question: Write a function that returns both the minimum and maximum of a list.
 def min_max(lst):
     return min(lst), max(lst)
 
