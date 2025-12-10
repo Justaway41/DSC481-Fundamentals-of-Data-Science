@@ -89,11 +89,6 @@ Speaker Notes (≈1 min)
 ---
 
 <!-- Scoped style -->
-<style scoped>
-section{
-  font-size: 1.58em;
-}
-</style>
 
 # Lists — Examples & Pitfalls
 
@@ -115,6 +110,8 @@ def f(x, lst=[]):
     lst.append(x)
     return lst  # BAD: shared list across calls
 ```
+
+---
 
 - Use None and initialize inside:
 
