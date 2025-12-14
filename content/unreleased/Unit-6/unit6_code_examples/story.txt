@@ -1,0 +1,4 @@
+This is a sample story file.
+It has multiple lines.
+This is the third line.
+This line was appended.

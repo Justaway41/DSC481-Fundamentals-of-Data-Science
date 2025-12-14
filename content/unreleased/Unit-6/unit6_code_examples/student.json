@@ -1,0 +1,10 @@
+{
+  "student": "Asha",
+  "grade": 85,
+  "courses": [
+    "Math",
+    "Python",
+    "Data Science",
+    "Statistics"
+  ]
+}
