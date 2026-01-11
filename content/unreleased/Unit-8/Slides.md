@@ -185,6 +185,72 @@ Speaker Notes
 
 ---
 
+# Common Dos and Don'ts in Data Visualization
+
+**Do:**
+
+- Use clear, readable labels and titles
+- Choose color palettes that are colorblind-friendly (e.g., avoid red-green combinations)
+- Keep charts simple and uncluttered
+- Use appropriate chart types for your data (e.g., bar for categories, line for trends)
+- Make sure axes start at zero (when appropriate)
+- Add legends and units where needed
+
+---
+
+# Common Dos and Don'ts in Data Visualization
+
+**Don't:**
+
+- Use too many colors or distracting backgrounds
+- Distort axes to exaggerate trends
+- Overload charts with too much information
+- Use 3D effects that make data hard to read
+- Forget about accessibility (e.g., colorblind users)
+
+<!--
+Speaker Notes
+- Emphasize that good visualization is about clarity and honesty
+- Mention that colorblindness affects ~8% of men, so always check color palettes
+- Simplicity and accuracy are more important than fancy effects
+-->
+
+---
+
+# Types of Legends
+
+- **Color Legend**: Maps colors to categories or ranges (e.g., different product types)
+  - _Example_: Bar chart with bars colored by region (blue = North, red = South, green = East, yellow = West)
+- **Size Legend**: Maps marker/shape size to numeric values (e.g., population size)
+  - _Example_: Bubble chart where bubble size shows population (small = 1M, large = 10M)
+
+<!--
+Speaker Notes
+- Legends help viewers decode what colors, sizes, and patterns represent
+- Always include a legend when using color or style encoding
+- Place legends where they don't obscure data; consider outside the plot area
+- Use descriptive labels in legends, not just codes or abbreviations
+---
+
+# Types of Legends
+
+- **Pattern Legend**: Uses different patterns or textures for distinction
+- _Example_: Bar chart with striped bars for projected values and solid bars for actual values
+- **Line Style Legend**: Distinguishes lines by style (solid, dashed, dotted)
+  - _Example_: Line plot with solid line for 2024 data, dashed for 2025, dotted for 2026
+- **Shape/Marker Legend**: Uses different markers for different groups (circles, squares, triangles)
+  - _Example_: Scatter plot with circles for male, squares for female, triangles for other
+
+<!--
+Speaker Notes
+- Legends help viewers decode what colors, sizes, and patterns represent
+- Always include a legend when using color or style encoding
+- Place legends where they don't obscure data; consider outside the plot area
+- Use descriptive labels in legends, not just codes or abbreviations
+-->
+
+---
+
 # Introduction to Matplotlib
 
 - Widely used Python plotting library
