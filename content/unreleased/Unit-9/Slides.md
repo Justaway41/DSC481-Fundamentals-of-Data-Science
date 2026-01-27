@@ -144,4 +144,3 @@ print(kmeans.labels_)
 - [Towards Data Science: ML for Beginners](https://towardsdatascience.com/machine-learning-for-beginners-d247a9420dab) – Blog articles and guides
 - [StatQuest: Machine Learning Playlist](https://www.youtube.com/playlist?list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1) – YouTube videos explaining ML concepts visually
 - [Awesome Machine Learning with Python](https://github.com/josephmisiti/awesome-machine-learning#python) – Curated list of ML libraries and resources
-
