@@ -11,5 +11,6 @@ X = df[['study_hours']]
 y = df['marks']
 model = LinearRegression()
 model.fit(X, y)
-predicted = model.predict([[7]])
+X_new = pd.DataFrame({'study_hours': [7]})
+predicted = model.predict(X_new)
 print(f"Predicted marks for 7 study hours: {predicted[0]:.2f}")
