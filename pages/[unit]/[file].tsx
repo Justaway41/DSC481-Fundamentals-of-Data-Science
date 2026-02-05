@@ -73,7 +73,18 @@ function cleanMarpMarkdown(content: string): string {
   let markdown = content.replace(/^---[\s\S]*?---\n*/m, "");
 
   // Remove HTML comments (speaker notes in Marp)
-  markdown = markdown.replace(/<!--[\s\S]*?-->/g, "");
+  // Only remove Marp frontmatter if 'marp: true' is present in the frontmatter
+  if (markdown.startsWith("---")) {
+    const end = markdown.indexOf("---", 3);
+    if (end !== -1) {
+      const frontmatter = markdown.slice(0, end + 3);
+      if (/marp:\s*true/i.test(frontmatter)) {
+        return markdown.slice(end + 3).trimStart();
+      }
+    }
+  }
+  // For normal markdown files, return as is
+  return markdown;
 
   // Remove slide separators (---) and replace with horizontal rule for visual separation
   markdown = markdown.replace(/\n---\n/g, "\n\n---\n\n");
