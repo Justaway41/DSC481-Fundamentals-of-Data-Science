@@ -137,7 +137,17 @@ A line plot with two lines: one for average marks and one for average attendance
 _Figure: Line plot with two lines—one for average marks and one for average attendance across five terms._
 
 **Explanation:**
-This code visualizes trends in marks and attendance over time. Line plots are ideal for showing changes and comparisons across ordered categories (like terms or years). Adding a legend and labels makes the plot easy to interpret.
+This code visualizes trends in marks and attendance over time.
+
+**How to read this line plot:**
+
+- Each point on the lines shows the average marks or attendance for a specific term.
+- The blue line (Average Marks) shows how students' marks changed from Term 1 to Term 5.
+- The orange line (Average Attendance) shows how attendance changed over the same period.
+- If the lines go up, it means improvement; if they go down, it means a drop.
+- Comparing the two lines helps you see if higher attendance is linked to higher marks.
+
+Line plots are ideal for showing changes and comparisons across ordered categories (like terms or years). Adding a legend and labels makes the plot easy to interpret.
 
 ---
 
@@ -177,7 +187,15 @@ plt.show()
 _Figure: Bar chart showing the average marks for each subject._
 
 **Explanation:**
-Bar charts are used to compare quantities across categories. Here, each bar represents the average mark for a subject, making it easy to see which subjects have higher or lower averages.
+Bar charts are used to compare quantities across categories.
+
+**How to read this bar chart:**
+
+- Each bar shows the average marks for a subject (Math, Science, English, Nepali).
+- Taller bars mean higher average marks in that subject.
+- You can quickly see which subjects students scored best or worst in.
+
+This helps you compare performance across different subjects at a glance.
 
 ---
 
@@ -295,6 +313,9 @@ Seaborn makes it easy to create attractive, informative plots. The `hue` paramet
 **Question:**
 Create a DataFrame with marks, study hours, and attendance. Calculate the correlation between study hours and marks. Find which variables are most related.
 
+**Definition: Correlation**
+Correlation is a statistical measure that describes the strength and direction of a relationship between two variables. It ranges from -1 (perfect negative) to +1 (perfect positive), with 0 meaning no relationship.
+
 **Sample Dataset:**
 
 | marks | study_hours | attendance |
@@ -338,6 +359,9 @@ Correlation measures how strongly two variables move together. Here, marks and s
 
 **Question:**
 Use a DataFrame with marks, study hours, and attendance. Calculate covariance between all columns. Discuss whether positive results match expected relationships.
+
+**Definition: Covariance**
+Covariance is a measure of how two variables change together. A positive covariance means the variables increase together, while a negative value means one increases as the other decreases. Unlike correlation, covariance is not standardized and depends on the scale of the variables.
 
 **Sample Dataset:**
 

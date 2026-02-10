@@ -7,6 +7,9 @@
 **Question:**
 Create a heatmap for a correlation matrix.
 
+**Definition: Correlation**
+Correlation is a statistical measure that describes the strength and direction of a relationship between two variables. It ranges from -1 (perfect negative) to +1 (perfect positive), with 0 meaning no relationship.
+
 **Sample Dataset:**
 
 | sepal_length | sepal_width | petal_length | petal_width | species    |
@@ -38,7 +41,16 @@ plt.show()
 _Figure: Correlation heatmap showing the correlation coefficients between all numeric columns in the iris dataset._
 
 **Explanation:**
-A correlation heatmap visually displays the strength and direction of relationships between variables. High positive or negative values indicate strong relationships, while values near zero indicate weak or no relationship.
+A correlation heatmap visually displays the strength and direction of relationships between variables.
+
+**How to read this heatmap:**
+
+- Each square shows the correlation between two variables (e.g., sepal length and petal width).
+- Colors closer to red or blue mean a stronger positive or negative relationship.
+- Values near +1 mean the variables increase together; values near -1 mean one increases as the other decreases.
+- Values near 0 mean little or no relationship.
+
+This helps you quickly spot which features are related in the dataset.
 
 ---
 
@@ -75,7 +87,16 @@ plt.show()
 _Figure: Pair plot of iris dataset colored by species._
 
 **Explanation:**
-Pair plots show relationships between all pairs of variables in a dataset. Coloring by species helps reveal patterns and separations between groups.
+Pair plots show relationships between all pairs of variables in a dataset.
+
+**How to read this pair plot:**
+
+- Each small plot compares two features (e.g., sepal length vs petal width).
+- Points are colored by species, so you can see how groups differ.
+- Diagonal plots show the distribution of each feature.
+- Look for clusters or separations between colors to spot patterns.
+
+Coloring by species helps reveal patterns and separations between groups.
 
 ---
 
@@ -111,7 +132,16 @@ fig.show()
 _Figure: Plotly scatter plot of sepal width vs sepal length colored by species._
 
 **Explanation:**
-Plotly creates interactive plots that allow users to explore data dynamically. This is useful for presentations and dashboards.
+Plotly creates interactive plots that allow users to explore data dynamically.
+
+**How to read this scatter plot:**
+
+- Each point shows a flower's sepal width and sepal length.
+- Points are colored by species, so you can compare groups.
+- You can hover over points to see details or zoom in for a closer look.
+- Patterns or clusters in the plot can show how species differ.
+
+This is useful for presentations and dashboards.
 
 ---
 

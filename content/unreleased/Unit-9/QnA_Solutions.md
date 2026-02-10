@@ -7,6 +7,9 @@
 **Question:**
 Try a simple regression with your own dataset (e.g., marks vs study hours).
 
+**Definition: Regression**
+Regression is a statistical method used to model and analyze the relationship between a dependent variable and one or more independent variables. It is commonly used for predicting continuous outcomes.
+
 **Sample Dataset:**
 
 | study_hours | marks |
@@ -42,7 +45,16 @@ print(f"Predicted marks for 7 study hours: {predicted[0]:.2f}")
 _Figure: Regression plot showing marks vs study hours with regression line._
 
 **Explanation:**
-This code fits a linear regression model to predict marks based on study hours. The model learns the relationship from the data and predicts marks for a new value (7 study hours). Linear regression is used for predicting continuous outcomes.
+This code fits a linear regression model to predict marks based on study hours. The model learns the relationship from the data and predicts marks for a new value (7 study hours).
+
+**How to read this regression plot:**
+
+- Each point shows a student's study hours and their marks.
+- The straight line (regression line) shows the best fit through the data points.
+- If the line goes up, it means more study hours are linked to higher marks.
+- You can use the line to predict marks for any number of study hours.
+
+Linear regression is used for predicting continuous outcomes.
 
 ---
 
@@ -50,6 +62,9 @@ This code fits a linear regression model to predict marks based on study hours. 
 
 **Question:**
 Build a classifier for a small labeled dataset.
+
+**Definition: Classification**
+Classification is a machine learning technique used to assign data points to predefined categories or classes. It is used for predicting discrete outcomes (e.g., pass/fail).
 
 **Sample Dataset:**
 
@@ -85,7 +100,16 @@ print(f"Predicted pass/fail for 68 marks: {'Pass' if predicted[0] else 'Fail'}")
 _Figure: Classification plot showing pass/fail by marks with decision boundary._
 
 **Explanation:**
-A decision tree classifier is trained to predict whether a student passes or fails based on marks. The model is then used to predict the outcome for a new mark (68). Classification is used for predicting categories.
+A decision tree classifier is trained to predict whether a student passes or fails based on marks. The model is then used to predict the outcome for a new mark (68).
+
+**How to read this classification plot:**
+
+- Each point shows a student's marks and whether they passed or failed.
+- The plot is divided by a boundary (often a line) that separates pass from fail.
+- Points on one side of the boundary are predicted as 'pass', the other as 'fail'.
+- You can see how well the model separates the two groups.
+
+Classification is used for predicting categories.
 
 ---
 
@@ -93,6 +117,9 @@ A decision tree classifier is trained to predict whether a student passes or fai
 
 **Question:**
 Cluster a set of points and visualize the groups.
+
+**Definition: Clustering**
+Clustering is an unsupervised learning technique that groups similar data points together based on their features. It helps to discover patterns or groupings in data without using labeled outcomes.
 
 **Sample Dataset:**
 
@@ -124,7 +151,16 @@ print(f"Cluster labels: {kmeans.labels_}")
 _Figure: Clustering plot showing study hours vs marks with clusters._
 
 **Explanation:**
-KMeans clustering groups similar data points together. Here, students are clustered based on study hours and marks. The output labels show which cluster each student belongs to. Clustering is an unsupervised learning technique.
+KMeans clustering groups similar data points together. Here, students are clustered based on study hours and marks. The output labels show which cluster each student belongs to.
+
+**How to read this clustering plot:**
+
+- Each point shows a student's study hours and marks.
+- Points with the same color or symbol belong to the same cluster (group).
+- The plot helps you see which students are similar in terms of study habits and performance.
+- Clusters can reveal patterns, such as groups of high performers or those needing help.
+
+Clustering is an unsupervised learning technique.
 
 ---
 
